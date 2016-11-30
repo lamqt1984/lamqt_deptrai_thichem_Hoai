@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+	<!-- __author__ = 'LamQT lamqt@hanelsoft.vn' -->
+		<record id="attached_pdf_view_tree" model="ir.ui.view">
+			<field name="name">pdf.attachment.tree</field>
+			<field name="model">pdf.attachment</field>
+			<field name="arch" type="xml">
+				<tree string="Auto Attached PDF Report">
+					<field name="name" />
+					<field name="date" />
+					<field name="model_name" />
+					<field name="id_obj" />
+					<field name="user_id" />
+					<field name="attachment_ids" widget="many2many_binary" />
+				</tree>
+			</field>
+		</record>
+		<record id="attached_pdf_view_form" model="ir.ui.view">
+			<field name="name">pdf.attachment.form</field>
+			<field name="model">pdf.attachment</field>
+			<field name="arch" type="xml">
+				<form string="Auto Attached PDF Report">
+					<header>
+
+					</header>
+					<sheet>
+						<group>
+							<group>
+								<field name="name" />
+								<field name="model_name" />
+								<field name="id_obj" />
+							</group>
+							<group>
+								<field name="date" />
+								<field name="user_id" />
+								<field name="attachment_ids" widget="many2many_binary" />
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="view_attached_pdf_search" model="ir.ui.view">
+			<field name="name">pdf.attachment.search</field>
+			<field name="model">pdf.attachment</field>
+			<field name="arch" type="xml">
+				<search string="Auto Attached PDF Report">
+					<field name="name" filter_domain="[('name','ilike',self)]"
+						string="Pdf_Name" />
+					<field name="model_name" filter_domain="[('model_name','ilike',self)]"
+						string="Pdf_Object" />
+					<field name="date" filter_domain="[('date','ilike',self)]"
+						string="Date" />
+					<field name="user_id" filter_domain="[('user_id','ilike',self)]"
+						string="User" />
+					<group expand="0" string="Group By">
+						<filter string="Pdf_Name" domain="[]" context="{'group_by':'name'}"
+							name="my_group_name" />
+						<filter string="Pdf_Object" domain="[]"
+							context="{'group_by':'model_name'}" name="my_group" />
+						<filter string="Date" domain="[]" context="{'group_by':'date'}" />
+						<filter string="User" domain="[]" context="{'group_by':'user_id'}" />
+					</group>
+				</search>
+			</field>
+		</record>
+
+
+		<record id="action_attached_pdf" model="ir.actions.act_window">
+			<field name="name">Auto Attached PDF Report</field>
+			<field name="res_model">pdf.attachment</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="search_view_id" ref="view_attached_pdf_search" />
+			<field name="context">{'search_default_my_group_name': 1}
+			</field>
+
+		</record>
+		<record id="action_attached_pdf_view_tree" model="ir.actions.act_window.view">
+			<field name="name">Auto Attached PDF Report</field>
+			<field name="type">ir.actions.act_window.view</field>
+			<field eval="1" name="sequence" />
+			<field name="view_mode">tree</field>
+			<field name="view_id" ref="attached_pdf_view_tree" />
+			<field name="act_window_id" ref="action_attached_pdf" />
+		</record>
+		<record id="action_attached_pdf_view_form" model="ir.actions.act_window.view">
+			<field name="name">Auto Attached PDF Report</field>
+			<field name="type">ir.actions.act_window.view</field>
+			<field eval="1" name="sequence" />
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="attached_pdf_view_form" />
+			<field name="act_window_id" ref="action_attached_pdf" />
+		</record>
+		<menuitem id="attached_pdf" parent="base.menu_base_partner"
+			sequence="105" name="Auto Attached PDF Report" />
+
+		<menuitem action="action_attached_pdf" id="menu_action_attached_pdf"
+			parent="attached_pdf" name="Auto Attached PDF Report" />
+	</data>
+</openerp>
