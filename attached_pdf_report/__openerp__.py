@@ -1,6 +1,6 @@
 {
     'name': 'Pdf Report auto attachment',
-    'summary': 'Automatically attach PDF file when you download PDF Reports on odoo system. If you can not find the old reports, you can go menu "Auto Attached PDF Report" to download again',
+    'summary': 'Automatically attach PDF file when you download PDF Reports on odoo system. If you can not find the old reports, you can download again',
     'version': '1.0',
     'category': '',
     'description': """
