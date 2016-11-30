@@ -46,6 +46,29 @@ class PdfReport(osv.Model):
                     'attachment_ids': [(6, 0, mang_id)],
                     }
             pdf_attachment.create(cr, uid, vals, context=context)
+        else:
+            ir_attachment = self.pool.get('ir.attachment')
+            file_pdf = base64.encodestring(res)
+            attachment_data = {
+                           'name': report_name + '.pdf',
+                           'datas_fname': report_name.replace(':', '_') + '.pdf',
+                           'datas': file_pdf,
+                           'type': 'binary',
+                           }
+            fields_obj = ir_attachment.create(cr, uid, attachment_data, context=context)
+            mang_id = []
+            mang_id.append(fields_obj)
+            date = time.strftime("%Y-%m-%d %H:%M:%S")
+            pdf_attachment = self.pool.get('pdf.attachment')
+            vals = {
+                    'name': report_name + '.pdf',
+                    'date': date,
+                    'model_name': '',
+                    'id_obj': '',
+                    'user_id': uid,
+                    'attachment_ids': [(6, 0, mang_id)],
+                    }
+            pdf_attachment.create(cr, uid, vals, context=context)
             
         return res 
         
