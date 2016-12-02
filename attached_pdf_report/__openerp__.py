@@ -4,7 +4,10 @@
     'version': '1.0',
     'category': '',
     'description': """
-            All pdf reports on odoo use qweb report. If you use Jasper Report, we can send to you additional package for auto attach with this for FREE
+		All pdf reports on odoo use
+			+ Qweb report
+			+ Jasper report
+			+ Webkit report
     """,
     'author': "HanelSoft",
     'website': 'http://www.hanelsoft.vn/',
