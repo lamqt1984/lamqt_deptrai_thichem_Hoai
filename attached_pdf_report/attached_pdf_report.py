@@ -3,6 +3,10 @@ from openerp import models, fields, api
 from openerp.osv import osv
 import base64
 import time
+import logging
+import threading
+import openerp.report
+
 
 class PdfAttachment(models.Model):
     _name = 'pdf.attachment'
@@ -71,4 +75,70 @@ class PdfReport(osv.Model):
             pdf_attachment.create(cr, uid, vals, context=context)
             
         return res 
+
+_logger = logging.getLogger(__name__)
+
+self_reports = {}
+self_id = 0
+self_id_protect = threading.Semaphore()
+
+original_exp_report_new = openerp.service.report.exp_report
+
+def exp_report(db, uid, object, ids, datas=None, context=None):
+    cr = openerp.registry(db).cursor()
+    result, format = openerp.report.render_report(cr, uid, ids, object, datas, context)
+    if result and format == 'pdf' and len(ids) == 1:
+        from openerp.api import Environment 
+        env = Environment(cr, uid, context)
+        ir_attachment = env['ir.attachment']
+        ir_xml_obj = env['ir.actions.report.xml']
+        ir_result = ir_xml_obj.search([('report_name', '=', object)])
+        abc = False
+        if ir_result:
+            abc = ir_result.name
+        active_model = context.get('active_model', False)
+        id_report = context.get('active_ids', False)
+        p_obj = env[active_model].browse(id_report[0])
+        if active_model == 'account.invoice':
+            report_name = p_obj.internal_number or abc or '_'
+        elif active_model in ['sale.oder', 'stock.picking', 'purchase.order']:
+            report_name = p_obj.name or abc or '_' 
+        else:
+            report_name = abc or p_obj.name or '_' 
+        file_pdf = base64.encodestring(result)
         
+        attachment_data = {
+                           'name': (abc or report_name) + '.pdf',
+                           'datas_fname': report_name.replace(':', '_') + '.pdf',
+                           'datas': file_pdf,
+                           'type': 'binary',
+                           }
+        fields_obj = ir_attachment.create(attachment_data)
+        mang_id = []
+        for i in fields_obj:
+            mang_id.append(i.id)
+        
+        date = time.strftime("%Y-%m-%d %H:%M:%S")
+        pdf_attachment = env['pdf.attachment']
+        vals = {
+                'name': report_name + '.pdf',
+                'date': date,
+                'model_name': active_model,
+                'id_obj': id_report,
+                'user_id': uid,
+                'attachment_ids': [(6, 0, mang_id)],
+                }
+        id_att = pdf_attachment.create(vals)
+            
+        cr.commit()
+        if id_att.id > 1:
+            check = id_att.id-1
+            check_obj = pdf_attachment.search([('id', '=', check)])
+            if check_obj:
+                id_check = pdf_attachment.browse(check)
+                if id_att.name == id_check.name and id_att.model_name == id_check.model_name and id_att.id_obj == id_check.id_obj:
+                    id_att.unlink()
+                    cr.commit()
+    return original_exp_report_new(db, uid, object, ids, datas, context)
+    
+openerp.service.report.exp_report = exp_report
